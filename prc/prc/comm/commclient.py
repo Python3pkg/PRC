@@ -1,4 +1,4 @@
-import comm
+from . import comm
 
 ######################################################################################
 ################################### Classes ##########################################
@@ -123,7 +123,7 @@ def sendAndReceive(ip,port,data_to_send,retry=3):
         connection.close()
     except comm.CommException as error:
         if retry == 0: raise CommClientException(error)
-        print str(error) + "  Retrying ... " + str(retry)
+        print(str(error) + "  Retrying ... " + str(retry))
         retry -= 1
         data_received = sendAndReceive(ip,port,data_to_send,retry)
 

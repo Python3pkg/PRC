@@ -1,6 +1,6 @@
 import code
-import prc
-import SocketServer
+from . import prc
+import socketserver
 ################################################################################
 ############################## Constants #######################################
 ################################################################################
@@ -19,8 +19,8 @@ class PRCServer(object):
         _comm_server_thread     - Communication Thread
     """
     def __init__(self,ip="",port=prc.DEFAULT_PORT):
-        from comm import server_factory
-        from comm import CommServerException
+        from .comm import server_factory
+        from .comm import CommServerException
         import threading
 
         try: self._comm_server = server_factory(ip,port,request_handler,PRCSocketServer)
@@ -80,7 +80,7 @@ class PRCConsole(code.InteractiveConsole):
         _exit                   - Exit event
     """
     def __init__(self,locals={}):
-        import Queue
+        import queue
         import threading
 
         locals["__prcconsole__"] = self
@@ -89,8 +89,8 @@ class PRCConsole(code.InteractiveConsole):
 
         code.InteractiveConsole.__init__(self,locals,filename="<PRCConsole>")
 
-        self._input_queue = Queue.Queue()
-        self._output_queue = Queue.Queue()
+        self._input_queue = queue.Queue()
+        self._output_queue = queue.Queue()
 
         self._prompt = None
         self._code_executed = threading.Event()
@@ -207,7 +207,7 @@ class PRCConsole(code.InteractiveConsole):
         """
         return self._exit.is_set()
 
-class PRCSocketServer(SocketServer.ThreadingTCPServer):
+class PRCSocketServer(socketserver.ThreadingTCPServer):
     """
         PRC socket server with support for consoles.
 
@@ -219,7 +219,7 @@ class PRCSocketServer(SocketServer.ThreadingTCPServer):
     def __init__(self,*args,**kargs):
         import threading
 
-        SocketServer.ThreadingTCPServer.__init__(self,*args,**kargs)
+        socketserver.ThreadingTCPServer.__init__(self,*args,**kargs)
         self._consoles = {}
         self._consoles_lock = threading.RLock()
         self._locals = {}
@@ -287,13 +287,13 @@ def request_handler(request):
         Returns:
         Nothing
     """
-    from comm import protocol,CommException
-    import Queue
+    from .comm import protocol,CommException
+    import queue
 
     try:
         recv_frame = request.receive()
     except CommException as error:
-        print error
+        print(error)
         request.close()
         return
 
@@ -334,6 +334,6 @@ def request_handler(request):
     try:
         request.send(send_frame)
     except CommException as error:
-        print error
+        print(error)
     finally:
         request.close()
